@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>BC 站點業務流程圖 + 站點技術架構圖</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  :root{ --ink:#1f2937; --muted:#6b7280; --line:#e5e7eb;
+    --c-traffic:#7c3aed; --c-site:#0e7490; --c-baowang:#b45309; --c-agg:#4338ca; --c-game:#15803d;
+    --c-money:#ca8a04; --c-data:#059669; --c-break:#dc2626;}
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:"Microsoft JhengHei","PingFang TC","Noto Sans TC",sans-serif;
+    background:#f1f5f9; color:var(--ink); padding:26px 30px; max-width:1500px; margin:0 auto;}
+  h1{font-size:23px; letter-spacing:1px;}
+  h2{font-size:17px; margin:26px 0 6px; padding:6px 12px; color:#fff; border-radius:7px; letter-spacing:1px;}
+  h2.flow{background:var(--c-site);}
+  h2.arch{background:var(--c-baowang);}
+  h2.money{background:#8a6d03;}
+  .sub{color:var(--muted); font-size:12.5px; margin:5px 0 6px; line-height:1.7;}
+  .card{background:#fff; border:1px solid var(--line); border-radius:12px; padding:14px 16px;
+    box-shadow:0 2px 8px rgba(0,0,0,.07); margin-bottom:8px; overflow-x:auto;}
+  .mermaid{font-size:14px;}
+  .note{font-size:12px; color:var(--muted); line-height:1.75; margin:6px 2px 0;}
+  .note b{color:var(--ink);}
+  table{border-collapse:collapse; width:100%; font-size:12.5px; margin-top:4px;}
+  th,td{border:1px solid var(--line); padding:6px 9px; text-align:left; line-height:1.55;}
+  th{background:#f8fafc; font-weight:bold;}
+  td.m{background:#fffbeb; font-weight:bold; color:#92400e; white-space:nowrap;}
+  .tag{display:inline-block; font-size:10.5px; font-weight:bold; color:#fff; border-radius:4px; padding:0 6px; vertical-align:1px;}
+  .tag.v{background:#475569;} .tag.m{background:var(--c-money);} .tag.d{background:var(--c-data);} .tag.x{background:var(--c-break);}
+  .foot{margin-top:18px; font-size:11.5px; color:var(--muted); line-height:1.85;}
+  @media print{ body{max-width:none;} .card{box-shadow:none; break-inside:avoid;} }
+</style>
+</head>
+<body>
+
+<h1>BC 站點業務流程圖 + 站點技術架構圖</h1>
+<div class="sub">v1.0 2026-06-11</div>
+
+<h2 class="flow">一、BC 站點端到端業務流程圖(玩家旅程)</h2>
+<div class="card">
+<div class="mermaid">
+flowchart LR
+  classDef drain fill:#f3e8ff,stroke:#7c3aed,color:#4c1d95;
+  classDef site fill:#cffafe,stroke:#0e7490,color:#0c4a6e;
+  classDef game fill:#dcfce7,stroke:#15803d,color:#14532d;
+  classDef sup fill:#f1f5f9,stroke:#94a3b8,color:#334155;
+
+  subgraph DRAIN["引流端 · 代理=下線開站"]
+    direction TB
+    AG["代理（下線）開站"]
+    AG --> C1["地推"]
+    AG --> C2["廣告"]
+    AG --> C3["簡訊"]
+  end
+  LP["落地頁<br/>（白牌斗篷·防封）"]
+  C1 --> LP
+  C2 --> LP
+  C3 --> LP
+
+  subgraph FUNNEL["BC 站點轉化漏斗 · A站 / B站 / C站"]
+    direction LR
+    REG["註冊"] --> KYC["KYC"] --> DEP["首存首充"] --> BET["首投"] --> OPS["站內運營<br/>活動·VIP·紅利反水"]
+    OPS --> RET["活躍留存<br/>復充"] --> SLP["沉睡"] --> RCL["召回"]
+  end
+  LP --> REG
+
+  subgraph GAME["遊戲供應"]
+    direction TB
+    Q["棋牌"]
+    S["Slot"]
+    F["捕魚"]
+    L["真人"]
+    SP["體育／電競"]
+    LT["彩票"]
+  end
+  OPS -->|玩家進遊戲下注| GAME
+  GAME -->|GGR 回站點| OPS
+
+  subgraph SUP["橫向支撐（全程）"]
+    direction TB
+    PAY["支付通道<br/>代收代付·USDT"]
+    RC["風控／封控"]
+    CS["客服 IM·工單"]
+  end
+  DEP -.金流.-> PAY
+  FUNNEL -.全程.-> SUP
+
+  class AG,C1,C2,C3 drain;
+  class REG,KYC,DEP,BET,OPS,RET,SLP,RCL,LP site;
+  class Q,S,F,L,SP,LT game;
+  class PAY,RC,CS sup;
+</div>
+<div class="note">
+  <b>讀法</b>:代理開站 → 三渠道引流 → 落地頁 → 註冊 → <b>首存首充</b>(站點最核心的轉化動作)→ 首投 → 站內運營把人留下持續付費 → 留存/沉睡/召回循環。
+</div>
+</div>
+
+<h2 class="arch">二、站點技術架構圖(系統分層)</h2>
+<div class="card">
+<div class="mermaid">
+flowchart TB
+  classDef l2c fill:#dbeafe,stroke:#2563eb,color:#1e3a8a;
+  classDef lsite fill:#cffafe,stroke:#0e7490,color:#0c4a6e;
+  classDef lbw fill:#fef3c7,stroke:#b45309,color:#7c2d12;
+  classDef lpa fill:#e0e7ff,stroke:#4338ca,color:#312e81;
+  classDef lgame fill:#dcfce7,stroke:#15803d,color:#14532d;
+  classDef ldata fill:#d1fae5,stroke:#059669,color:#064e3b,stroke-dasharray:4 3;
+
+  P["① 玩家層（2C）<br/>終端玩家 · A站／B站／C站"]:::l2c
+
+  subgraph L1["② 站點前台 · 換皮運營（站點自己做的事）"]
+    direction LR
+    BR["站名／品牌／活動配置"]
+    AGT["代理系統<br/>層級·分傭·結算"]
+  end
+
+  subgraph L2["③ 包網系統層 · 2B 匯聚點（站點的『中台』，一切功能來源）"]
+    direction LR
+    SYS["後台·帳號·錢包"]
+    LAND["落地頁·防封 CDN"]
+    PROMO["Promotion 引擎<br/>紅利·反水·活動"]
+    KYCM["KYC·標籤分群"]
+    PAYG["支付聚合<br/>基本渠道+支付渠道"]
+    CSM["客服 IM·工單"]
+    RCM["充提風控·黑名單"]
+    RPT["報表·財務對帳"]
+  end
+
+  subgraph L3["④ 集成層 · 自家 PA（可繞過：大站/有能力包網直連）"]
+    PA["一套 API 聚合全品類"]
+  end
+
+  subgraph L4["⑤ 遊戲供應商層"]
+    GP["品類：捕魚 / Slot / 真人 / 棋牌 / 體育·電競 / 彩票"]
+  end
+
+  BIDATA["⑥ 橫向數據／BI 層（規劃中，集團級現為空白）<br/>統一玩家 ID · 數據中台 · 集團報表"]:::ldata
+
+  P --> L1
+  L1 --> L2
+  L2 --> L3
+  L3 --> L4
+  L2 -. 直連跳過聚合 .-> L4
+  L2 -. 運營/充提數據 .-> BIDATA
+  L4 -. 子彈級事件流 .-> BIDATA
+
+  class BR,AGT lsite;
+  class SYS,LAND,PROMO,KYCM,PAYG,CSM,RCM,RPT lbw;
+  class PA lpa;
+  class GP lgame;
+</div>
+<div class="note">
+  <b>讀法</b>:站點自己只做第②層(換皮+運營+代理);第③層<b>包網</b>是所有系統功能的來源(站點的中台,也是各智能模塊未來的插槽);第④層 <b>PA</b> 把六品類聚合成單一接口,<b>但非必經層</b> —— 大站(九州型)或有能力的包網可直連遊戲商跳過聚合;第⑤層遊戲供應商,品類含捕魚/Slot/真人/棋牌/體育/彩票;第⑥層集團數據/BI 是橫向地基,目前空白,是整合藍圖要補的核心。
+</div>
+</div>
+
+<h2 class="money">三、金流與分潤(GGR 怎麼逐層切)</h2>
+<div class="card">
+<div class="note" style="margin-top:0;">
+  全鏈只有<b>一個錢源 = 玩家淨輸(GGR)</b>。站點收下 GGR 後,往各方付錢:
+</div>
+<table>
+  <tr><th>站點付給</th><th>對象</th><th>比例／方式</th><th>性質</th></tr>
+  <tr><td><span class="tag m">金</span> 買量費</td><td>流量端(投流 BU / 代理)</td><td class="m">CPC / CPA / CPS</td><td>走廣告預算,非 GGR;拉新成本</td></tr>
+  <tr><td><span class="tag m">金</span> 系統分成</td><td>包網 BU</td><td class="m">開版費 + GGR 分成 / 月費</td><td>系統租用,不按單一遊戲</td></tr>
+  <tr><td><span class="tag m">金</span> 聚合抽佣</td><td>聚合商 PA</td><td class="m">GGR 1-2%</td><td>薄利仲介,加在遊戲商之上;可繞過</td></tr>
+  <tr><td><span class="tag m">金</span> 內容分成</td><td>遊戲供應商 HG</td><td class="m">GGR 6-12%</td><td>遊戲內容;品類不同可能不同 <span class="tag x">待確認</span></td></tr>
+</table>
+<div class="note">
+  → 內容側合計約 <b>7-14% GGR</b>(遊戲商 6-12% + 聚合 1-2%)。站點付完內容、包網、買量、紅利、支付、稅費後的剩餘才是淨利。
+</div>
+</div>
+
+<script>
+  mermaid.initialize({ startOnLoad:true, theme:'base', flowchart:{ curve:'basis', nodeSpacing:28, rankSpacing:46 },
+    themeVariables:{ fontFamily:'"Microsoft JhengHei","Noto Sans TC",sans-serif', fontSize:'13px' } });
+</script>
+</body>
+</html>
