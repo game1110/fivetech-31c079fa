@@ -6,7 +6,7 @@
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
 <style>
   :root{ --ink:#1f2937; --muted:#6b7280; --line:#e5e7eb;
-    --c-traffic:#7c3aed; --c-site:#0e7490; --c-baowang:#b45309; --c-agg:#4338ca; --c-game:#15803d;
+    --c-traffic:#7c3aed; --c-site:#0e7490; --c-baowang:#b45309; --c-game:#15803d;
     --c-money:#ca8a04; --c-data:#059669; --c-break:#dc2626;}
   *{box-sizing:border-box; margin:0; padding:0;}
   body{font-family:"Microsoft JhengHei","PingFang TC","Noto Sans TC",sans-serif;
@@ -35,7 +35,7 @@
 <body>
 
 <h1>BC 站點業務流程圖 + 站點技術架構圖</h1>
-<div class="sub">v1.0 2026-06-11</div>
+<div class="sub">v1.0 · 2026-06-13 修訂 · 四環節(2026-06-13 老闆修正:取消「聚合商」獨立層 —— 包網直接對接遊戲供應商,PA / HG / 其他遊戲聚合商對包網而言都是遊戲供應商)</div>
 
 <h2 class="flow">一、BC 站點端到端業務流程圖(玩家旅程)</h2>
 <div class="card">
@@ -103,7 +103,6 @@ flowchart TB
   classDef l2c fill:#dbeafe,stroke:#2563eb,color:#1e3a8a;
   classDef lsite fill:#cffafe,stroke:#0e7490,color:#0c4a6e;
   classDef lbw fill:#fef3c7,stroke:#b45309,color:#7c2d12;
-  classDef lpa fill:#e0e7ff,stroke:#4338ca,color:#312e81;
   classDef lgame fill:#dcfce7,stroke:#15803d,color:#14532d;
   classDef ldata fill:#d1fae5,stroke:#059669,color:#064e3b,stroke-dasharray:4 3;
 
@@ -115,7 +114,7 @@ flowchart TB
     AGT["代理系統<br/>層級·分傭·結算"]
   end
 
-  subgraph L2["③ 包網系統層 · 2B 匯聚點（站點的『中台』，一切功能來源）"]
+  subgraph L2["③ 包網系統層 · 2B 匯聚點（站點的『中台』，一切功能來源；直接對接遊戲供應商）"]
     direction LR
     SYS["後台·帳號·錢包"]
     LAND["落地頁·防封 CDN"]
@@ -127,31 +126,24 @@ flowchart TB
     RPT["報表·財務對帳"]
   end
 
-  subgraph L3["④ 集成層 · 自家 PA（可繞過：大站/有能力包網直連）"]
-    PA["一套 API 聚合全品類"]
+  subgraph L3["④ 遊戲供應商層（包網直接對接;不設聚合商獨立層）"]
+    GP["品類：捕魚 / Slot / 真人 / 棋牌 / 體育·電競 / 彩票<br/>供應商兩型並列:純研發型（HG）+ 聚合型（PA／其他，一套 API 打包多家）"]
   end
 
-  subgraph L4["⑤ 遊戲供應商層"]
-    GP["品類：捕魚 / Slot / 真人 / 棋牌 / 體育·電競 / 彩票"]
-  end
-
-  BIDATA["⑥ 橫向數據／BI 層（規劃中，集團級現為空白）<br/>統一玩家 ID · 數據中台 · 集團報表"]:::ldata
+  BIDATA["⑤ 橫向數據／BI 層（規劃中，集團級現為空白）<br/>統一玩家 ID · 數據中台 · 集團報表"]:::ldata
 
   P --> L1
   L1 --> L2
-  L2 --> L3
-  L3 --> L4
-  L2 -. 直連跳過聚合 .-> L4
+  L2 -. 對接遊戲供應商（研發型/聚合型並列） .-> L3
   L2 -. 運營/充提數據 .-> BIDATA
-  L4 -. 子彈級事件流 .-> BIDATA
+  L3 -. 子彈級事件流（聚合型僅對帳級） .-> BIDATA
 
   class BR,AGT lsite;
   class SYS,LAND,PROMO,KYCM,PAYG,CSM,RCM,RPT lbw;
-  class PA lpa;
   class GP lgame;
 </div>
 <div class="note">
-  <b>讀法</b>:站點自己只做第②層(換皮+運營+代理);第③層<b>包網</b>是所有系統功能的來源(站點的中台,也是各智能模塊未來的插槽);第④層 <b>PA</b> 把六品類聚合成單一接口,<b>但非必經層</b> —— 大站(九州型)或有能力的包網可直連遊戲商跳過聚合;第⑤層遊戲供應商,品類含捕魚/Slot/真人/棋牌/體育/彩票;第⑥層集團數據/BI 是橫向地基,目前空白,是整合藍圖要補的核心。
+  <b>讀法</b>:站點自己只做第②層(換皮+運營+代理);第③層<b>包網</b>是所有系統功能的來源(站點的中台,也是各智能模塊未來的插槽),<b>直接對接</b>第④層遊戲供應商;第④層供應商兩型並列 —— <b>純研發型</b>(HG,自做遊戲/管數值)與<b>聚合型</b>(PA、行業其他遊戲聚合商,把多家遊戲打包成一套 API),對包網都是「遊戲供應商」,<b>不再設聚合商獨立層</b>(2026-06-13 老闆修正);第⑤層集團數據/BI 是橫向地基,目前空白,是整合藍圖要補的核心。
 </div>
 </div>
 
@@ -164,11 +156,10 @@ flowchart TB
   <tr><th>站點付給</th><th>對象</th><th>比例／方式</th><th>性質</th></tr>
   <tr><td><span class="tag m">金</span> 買量費</td><td>流量端(投流 BU / 代理)</td><td class="m">CPC / CPA / CPS</td><td>走廣告預算,非 GGR;拉新成本</td></tr>
   <tr><td><span class="tag m">金</span> 系統分成</td><td>包網 BU</td><td class="m">開版費 + GGR 分成 / 月費</td><td>系統租用,不按單一遊戲</td></tr>
-  <tr><td><span class="tag m">金</span> 聚合抽佣</td><td>聚合商 PA</td><td class="m">GGR 1-2%</td><td>薄利仲介,加在遊戲商之上;可繞過</td></tr>
-  <tr><td><span class="tag m">金</span> 內容分成</td><td>遊戲供應商 HG</td><td class="m">GGR 6-12%</td><td>遊戲內容;品類不同可能不同 <span class="tag x">待確認</span></td></tr>
+  <tr><td><span class="tag m">金</span> 內容分成</td><td>遊戲供應商(HG / PA / 其他)</td><td class="m">GGR 分成</td><td>純研發型(HG)約 6-12% <span class="tag x">待確認</span>;聚合型(PA)把自己 1-2% 抽佣含在報價內</td></tr>
 </table>
 <div class="note">
-  → 內容側合計約 <b>7-14% GGR</b>(遊戲商 6-12% + 聚合 1-2%)。站點付完內容、包網、買量、紅利、支付、稅費後的剩餘才是淨利。
+  → 站點付給遊戲供應商的內容成本:純研發型約 <b>6-12% GGR</b>,聚合型約在所含遊戲商之上再加 <b>1-2%</b>(換「一次接全品類」的省事)。站點付完內容、包網、買量、紅利、支付、稅費後的剩餘才是淨利。<b>2026-06-13 後不再把聚合商當獨立分潤層 —— 它就是遊戲供應商的一種報價形態。</b>
 </div>
 </div>
 

@@ -6,13 +6,13 @@
 <style>
   :root{
     --ink:#1f2937; --muted:#6b7280; --line:#e5e7eb;
-    --c-traffic:#7c3aed; --c-site:#0e7490; --c-baowang:#b45309; --c-agg:#4338ca; --c-game:#15803d;
+    --c-traffic:#7c3aed; --c-site:#0e7490; --c-baowang:#b45309; --c-game:#15803d;
     --c-break:#dc2626; --c-player:#2563eb; --c-money:#ca8a04; --c-data:#059669;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   body{
     font-family:"Microsoft JhengHei","PingFang TC","Noto Sans TC",sans-serif;
-    background:#f1f5f9; color:var(--ink); padding:24px 28px; min-width:1850px;
+    background:#f1f5f9; color:var(--ink); padding:24px 28px; min-width:1500px;
   }
   h1{font-size:24px; letter-spacing:1px;}
   .sub{color:var(--muted); font-size:12.5px; margin:4px 0 12px 0; line-height:1.7;}
@@ -23,15 +23,15 @@
   .brk-demo{display:inline-flex; align-items:center; justify-content:center; width:17px; height:17px;
     background:var(--c-break); color:#fff; border-radius:50%; font-size:10.5px; font-weight:bold;}
 
-  /* ================= 一張圖主體 ================= */
+  /* ================= 一張圖主體(四環節) ================= */
   .board{
     display:grid;
-    grid-template-columns:84px 1fr 54px 1.02fr 54px 1.02fr 54px 0.92fr 54px 0.98fr;
+    grid-template-columns:84px 1fr 54px 1.02fr 54px 1.02fr 54px 1.06fr;
     background:#fff; border:2.5px solid #1f2937; border-radius:12px; overflow:hidden;
     box-shadow:0 2px 8px rgba(0,0,0,.1);
   }
-  .gl{grid-column:1;} .g1{grid-column:2;} .g2{grid-column:4;} .g3{grid-column:6;} .g4{grid-column:8;} .g5{grid-column:10;}
-  .n1{grid-column:3;} .n2{grid-column:5;} .n3{grid-column:7;} .n4{grid-column:9;}
+  .gl{grid-column:1;} .g1{grid-column:2;} .g2{grid-column:4;} .g3{grid-column:6;} .g4{grid-column:8;}
+  .n1{grid-column:3;} .n2{grid-column:5;} .n3{grid-column:7;}
   .r1{grid-row:1;} .r2{grid-row:2;} .r3{grid-row:3;} .r4{grid-row:4;} .r5{grid-row:5;}
   .r6{grid-row:6;} .r7{grid-row:7;} .r8{grid-row:8;} .r9{grid-row:9;} .r10{grid-row:10;}
   .r11{grid-row:11;} .r12{grid-row:12;} .r13{grid-row:13;} .r14{grid-row:14;} .r15{grid-row:15;}
@@ -56,7 +56,7 @@
   .shead .t{font-size:15.5px; font-weight:bold; letter-spacing:1px; display:block;}
   .shead .bu{font-size:10.5px; background:rgba(255,255,255,.25); padding:1px 7px; border-radius:9px; display:inline-block; margin-top:3px;}
   .shead.traffic{background:var(--c-traffic);} .shead.site{background:var(--c-site);}
-  .shead.baowang{background:var(--c-baowang);} .shead.agg{background:var(--c-agg);} .shead.game{background:var(--c-game);}
+  .shead.baowang{background:var(--c-baowang);} .shead.game{background:var(--c-game);}
   .nhead{background:#334155; color:#cbd5e1; border:1px solid #334155; display:flex; align-items:center; justify-content:center; font-size:15px;}
 
   /* 列底色:三條流織進矩陣 */
@@ -65,11 +65,6 @@
   .pid{background:#eff6ff;}
   .pdata{background:#ecfdf5;}
   .ppain{background:#fef2f2; color:#991b1b;}
-
-  /* PA = 非必經層,視覺降級(原位、不破壞橫向對齊) */
-  .board .g4{opacity:.6;}
-  .board .cell.g4{border:1.6px dashed #818cf8;}
-  .board .shead.agg{opacity:1; filter:saturate(.55); border:1.6px dashed #c7d2fe;}
 
   .flowline{display:flex; flex-wrap:wrap; align-items:center; gap:2px; font-size:10.8px; line-height:1.8;}
   .flowline .s{background:#eef2ff; border:1px solid #e0e7ff; border-radius:5px; padding:0 4px; white-space:nowrap;}
@@ -108,7 +103,7 @@
 <body>
 
 <h1>BC行業全景</h1>
-<div class="sub">v1.0 2026-06-11</div>
+<div class="sub">v1.0 · 2026-06-13 修訂 · 四環節(2026-06-13 老闆修正:取消「聚合商」獨立環節 —— 包網直接對接遊戲供應商,PA / HG / 其他遊戲聚合商對包網而言都是遊戲供應商)</div>
 
 <div class="legend">
   <span class="item"><span class="tagdemo v">價</span>價值流(誰供誰)</span>
@@ -127,9 +122,7 @@
   <div class="nhead r1 n2">⇄</div>
   <div class="shead baowang r1 g3"><span class="t">包網(2B 系統)</span><span class="bu">包網 BU = 匯聚點</span></div>
   <div class="nhead r1 n3">⇄</div>
-  <div class="shead agg r1 g4"><span class="t">聚合商(PA)</span><span class="bu">集團 PA · 可繞過非必經</span></div>
-  <div class="nhead r1 n4">⇄</div>
-  <div class="shead game r1 g5"><span class="t">遊戲供應商</span><span class="bu">HG</span></div>
+  <div class="shead game r1 g4"><span class="t">遊戲供應商</span><span class="bu">純研發型 HG + 聚合型 PA / 其他</span></div>
 
   <!-- ===== 咬合帶(柱間,縱貫 r2-r15) ===== -->
   <div class="conn n1">
@@ -143,13 +136,8 @@
     <div class="cc"><span class="t d">數</span><span class="dir">▶</span>運營數據沉澱在包網<br><b>逐筆?待確認(斷6)</b></div>
   </div>
   <div class="conn n3">
-    <div class="cc"><span class="t v">價</span><span class="dir">▶</span>一套 API 全部遊戲</div>
-    <div class="cc"><span class="t m">金</span><span class="dir">◀</span>GGR 抽佣 1-2%:包網C$ → PA R$</div>
-    <div class="cc"><span class="t x">旁</span>可繞過:包網直連遊戲商</div>
-  </div>
-  <div class="conn n4">
-    <div class="cc"><span class="t v">價</span><span class="dir">▶</span>遊戲內容(吸量/留存/RTP可控)</div>
-    <div class="cc"><span class="t m">金</span><span class="dir">◀</span>GGR 分成 6-12%:PA C$ → HG R$(直連時跳層直付)</div>
+    <div class="cc"><span class="t v">價</span><span class="dir">▶</span>遊戲內容(研發型)/ 一套 API(聚合型)</div>
+    <div class="cc"><span class="t m">金</span><span class="dir">◀</span>GGR 分成:包網C$ → 供應商R$<br>研發型 6-12%；聚合型抽佣 1-2% 含在報價內</div>
     <div class="cc"><span class="t d">數</span><span class="dir">◀</span>事件流最細,理論可回饋全鏈<br>現狀只到自家 <b>斷1、4</b></div>
   </div>
 
@@ -157,129 +145,115 @@
   <div class="rowlab r2 gl">定位</div>
   <div class="cell r2 g1">DSP 雙邊市場:收下沉市場流量、賣 iGaming 廣告主;主攻越南/印尼(Google 封殺、Meta 嚴控下的活路)</div>
   <div class="cell r2 g2">面向玩家的運營方:系統全來自包網,自己只「投人投錢」做運營</div>
-  <div class="cell r2 g3">站點的「中台」,2B 賣系統;各方產品的匯聚點 + 智能模塊插槽</div>
-  <div class="cell r2 g4">遊戲打包商:一套 API 接六大品類(棋牌/Slot/捕魚/真人/體育電競/彩票);<b>非必經層</b></div>
-  <div class="cell r2 g5">內容供應方:做遊戲、管數值、按 GGR 分成</div>
+  <div class="cell r2 g3">站點的「中台」,2B 賣系統;各方產品的匯聚點 + 智能模塊插槽;<b>直接對接遊戲供應商</b></div>
+  <div class="cell r2 g4">內容供應方,並列兩型:<b>純研發型</b>(HG:做遊戲、管數值)/ <b>聚合型</b>(PA 等:把一萬多款 Slot、20+ 平台打包成一套 API)。包網挑供應商,不是一條額外的層</div>
 
   <!-- ===== r3 業務流程 ===== -->
   <div class="rowlab r3 gl">業務<br>流程</div>
   <div class="cell r3 g1"><div class="flowline"><span class="s">選市場</span><span class="a">→</span><span class="s">素材+人群+出價</span><span class="a">→</span><span class="s">落地頁</span><span class="a">→</span><span class="s">轉化</span><span class="a">→</span><span class="s">回傳</span><span class="a">→</span><span class="s">放大</span></div></div>
   <div class="cell r3 g2"><div class="flowline"><span class="s">註冊</span><span class="a">→</span><span class="s">首存</span><span class="a">→</span><span class="s">首投</span><span class="a">→</span><span class="s">復充</span><span class="a">→</span><span class="s">留存</span><span class="a">→</span><span class="s">VIP</span><span class="a">→</span><span class="s">召回</span></div></div>
   <div class="cell r3 g3"><div class="flowline"><span class="s">開站</span><span class="a">→</span><span class="s">接遊戲/支付</span><span class="a">→</span><span class="s">運維防封</span><span class="a">→</span><span class="s">商戶支持</span><span class="a">→</span><span class="s">結算</span></div></div>
-  <div class="cell r3 g4"><div class="flowline"><span class="s">簽遊戲商</span><span class="a">→</span><span class="s">API 接入</span><span class="a">→</span><span class="s">對帳結算</span></div></div>
-  <div class="cell r3 g5"><div class="flowline"><span class="s">研發</span><span class="a">→</span><span class="s">數值RTP</span><span class="a">→</span><span class="s">對接</span><span class="a">→</span><span class="s">遊戲內運營</span><span class="a">→</span><span class="s">分成</span></div></div>
+  <div class="cell r3 g4"><div class="flowline"><span class="s">研發</span><span class="a">→</span><span class="s">數值RTP</span><span class="a">→</span><span class="s">對接</span><span class="a">→</span><span class="s">遊戲內運營</span><span class="a">→</span><span class="s">分成</span></div><div class="mini">聚合型:簽遊戲商→聚合 API→對接→對帳</div></div>
 
   <!-- ===== r4 CS ===== -->
   <div class="rowlab r4 gl"><span class="no">1</span>CS<br>目標客層</div>
   <div class="cell r4 g1">需求側:iGaming 廣告主(集團關係企業優先 + 外賣);供給側:下沉市場小站/小眾 App 流量主</div>
   <div class="cell r4 g2">終端玩家:市場(印度)x 價值分層(魚/小R/大R-VIP);帶量的代理也是客戶</div>
   <div class="cell r4 g3">小老板(全包白標)/ 有團隊(半包)/ 大站(API);第一客戶 = 印度站</div>
-  <div class="cell r4 g4">包網商;有技術的大站(九州型:有運營體系只缺遊戲)</div>
-  <div class="cell r4 g5">三類 B 端:聚合商 / 包網直連 / 大站直連(J9);玩家 = 間接用戶</div>
+  <div class="cell r4 g4">B 端買家:包網(直連)、大站(直連,如 J9);把 HG 打包轉售的聚合型供應商也是買家。玩家 = 間接用戶</div>
 
   <!-- ===== r5 VP ===== -->
   <div class="rowlab r5 gl"><span class="no">2</span>VP<br>價值主張</div>
   <div class="cell r5 g1">「投得出去」的流量:更多(下沉聚量)+ 更真(清洗假量);幫小站變現</div>
   <div class="cell r5 g2">一站式娛樂:遊戲全 + 優惠多;<b>充提快 = 信任生命線</b>;本地化</div>
   <div class="cell r5 g3">「投人投錢就能開站」:快速開站、防封、省心</div>
-  <div class="cell r5 g4">免逐家對接(一萬多款 Slot、20+ 平台);統一錢包/對帳</div>
-  <div class="cell r5 g5">對 B 端:吸量、留得住、RTP 可控可信、對帳乾淨;對玩家:好玩+公平感</div>
+  <div class="cell r5 g4">研發型:吸量、留得住、RTP 可控可信、對帳乾淨;聚合型:免逐家對接(一萬多款 Slot、20+ 平台)+ 統一錢包/對帳</div>
 
   <!-- ===== r6 CH ===== -->
   <div class="rowlab r6 gl"><span class="no">3</span>CH<br>通路</div>
   <div class="cell r6 g1">集團內直供;外部行業 BD / 圈子轉介</div>
   <div class="cell r6 g2">投流各渠道、Affiliate 代理、私域(TG/簡訊)、口碑</div>
   <div class="cell r6 g3">行業 BD、口碑轉介;集團內直供(印度站打磨→外賣)</div>
-  <div class="cell r6 g4">行業 BD、遊戲商轉介;集團內直供</div>
-  <div class="cell r6 g5">聚合上架(鋪貨)、直連大客戶 BD、行業展會</div>
+  <div class="cell r6 g4">直連包網/大站 BD、行業展會;聚合型另經鋪貨上架</div>
 
   <!-- ===== r7 CR ===== -->
   <div class="rowlab r7 gl"><span class="no">4</span>CR<br>顧客關係</div>
   <div class="cell r7 g1">大客戶 BD + 後台自助;深度合作 = 數據回傳共同優化</div>
   <div class="cell r7 g2">VIP 專屬客服、CRM 分群觸達、紅利/反水維繫、沉睡召回</div>
   <div class="cell r7 g3">客戶成功/技術支持;<b>定製響應速度 = 防 J9 化的關鍵</b></div>
-  <div class="cell r7 g4">技術對接支持、SLA 穩定性</div>
-  <div class="cell r7 g5">商戶運營支持(活動配合/報表)、RTP 策略溝通</div>
+  <div class="cell r7 g4">商戶運營支持(活動配合/報表)、技術對接、RTP 策略溝通</div>
 
   <!-- ===== r8 R$(金流列) ===== -->
   <div class="rowlab lm r8 gl"><span class="no">5</span>R$<br>收益流</div>
   <div class="cell money r8 g1">買賣量價差 + CPC/CPA/CPS 計費<br><span class="mini">類型:仲介費+使用費|訂價:即時競價</span></div>
   <div class="cell money r8 g2"><b>GGR(玩家淨輸)</b>→ NGR = GGR − 紅利 − 稅費 − 支付成本<br><span class="mini">類型:賭局期望值差|訂價:依流水與 VIP 客層</span></div>
   <div class="cell money r8 g3">開版費 + GGR 分成 / 月費;增值服務<br><span class="mini">類型:資產銷售+租賃+仲介|訂價:三檔客層+協商</span></div>
-  <div class="cell money r8 g4">GGR 抽佣(1-2% 級)/ API 費<br><span class="mini">類型:仲介+授權|訂價:協商</span></div>
-  <div class="cell money r8 g5">GGR 分成 6-12%<span class="mini">(品類不同可能不同,待確認)</span><br><span class="mini">類型:仲介式分成(帶授權性質)|訂價:依商戶量級協商</span></div>
+  <div class="cell money r8 g4">GGR 分成:研發型 6-12%<span class="mini">(品類不同可能不同,待確認)</span>;聚合型抽佣 1-2% 含在報價內<br><span class="mini">類型:仲介式分成(帶授權性質)|訂價:依量級協商</span></div>
 
   <!-- ===== r9 C$(金流列) ===== -->
   <div class="rowlab lm r9 gl"><span class="no">9</span>C$<br>成本結構</div>
   <div class="cell cost r9 g1">流量採購(大頭)、研發、BD、假量壞帳<br><span class="mini">變動為主|成本驅動</span></div>
   <div class="cell cost r9 g2">買量(大頭)、紅利、支付費、<b>包網分成</b>、客服/運營人力<br><span class="mini">變動為主(隨流水)|大盤成本驅動 + VIP 線價值驅動</span></div>
   <div class="cell cost r9 g3">研發(大頭)、伺服器/CDN、<b>遊戲與支付分成</b>、客服運維<br><span class="mini">固定為主 = 規模經濟,外賣動機</span></div>
-  <div class="cell cost r9 g4">技術人力、<b>遊戲商分成</b>、結算<br><span class="mini">薄利仲介|成本驅動</span></div>
-  <div class="cell cost r9 g5">研發(大頭)、伺服器、RTP 補貼讓利(BOOST 型)<br><span class="mini">固定為主|價值驅動(內容差異化)</span></div>
+  <div class="cell cost r9 g4">研發型:研發(大頭)、伺服器、RTP 補貼讓利(BOOST 型)<span class="mini">|價值驅動</span>;聚合型:技術人力 + 遊戲商分成<span class="mini">|薄利成本驅動</span></div>
 
   <!-- ===== r10 KR ===== -->
   <div class="rowlab r10 gl"><span class="no">6</span>KR<br>關鍵資源</div>
   <div class="cell r10 g1">流量源網絡、DMP 標籤庫、反假量算法、投放後台</div>
   <div class="cell r10 g2">玩家名單、品牌口碑、代理網絡、運營團隊<span class="mini">(系統非自有)</span></div>
   <div class="cell r10 g3">系統平台本身、遊戲+支付聚合接口、防封設施、模板庫</div>
-  <div class="cell r10 g4">已簽遊戲商組合(廣度=護城河)、聚合 API 平台</div>
-  <div class="cell r10 g5">遊戲 IP/玩法、數值引擎(RTP 調控)、子彈級事件數據</div>
+  <div class="cell r10 g4">研發型:遊戲 IP/玩法、數值引擎(RTP 調控)、子彈級事件數據;聚合型:已簽遊戲商組合(廣度=護城河)、聚合 API 平台</div>
 
   <!-- ===== r11 KA ===== -->
   <div class="rowlab r11 gl"><span class="no">7</span>KA<br>關鍵活動</div>
   <div class="cell r11 g1">拓流量源、流量清洗、出價撮合、歸因回傳<span class="mini">;(猶豫)素材/落地頁服務</span></div>
   <div class="cell r11 g2">買量投放、活動運營/紅利配置、客服、提款審核/風控、代理管理</div>
   <div class="cell r11 g3">系統研發迭代、遊戲/支付接入、運維防封、商戶支持</div>
-  <div class="cell r11 g4">拓遊戲商、API 接入維護、對帳結算</div>
-  <div class="cell r11 g5">研發、數值調控、API 維護、遊戲內運營(活動/配房/陪玩)</div>
+  <div class="cell r11 g4">研發型:研發、數值調控、遊戲內運營(活動/配房/陪玩);聚合型:拓遊戲商、API 接入維護、對帳結算</div>
 
   <!-- ===== r12 KP ===== -->
   <div class="rowlab r12 gl"><span class="no">8</span>KP<br>合作夥伴</div>
   <div class="cell r12 g1">流量主、廣告主(數據回流)、集團內站點/包網/遊戲商</div>
   <div class="cell r12 g2">包網、支付通道、投流方/代理/KOL</div>
-  <div class="cell r12 g3">PA/遊戲商、支付商、CDN/雲、客服外包、智能模塊團隊</div>
-  <div class="cell r12 g4">各遊戲供應商(HG/PG/BBIN 等)、包網、大站</div>
-  <div class="cell r12 g5">聚合/包網/大站、美術外包、投流 BU、數據團隊</div>
+  <div class="cell r12 g3">遊戲供應商(HG 研發型 / PA 聚合型,直連)、支付商、CDN/雲、客服外包、智能模塊團隊</div>
+  <div class="cell r12 g4">包網/大站、美術外包(研發型)、各遊戲商(聚合型供貨);集團內:投流 BU、數據團隊</div>
 
   <!-- ===== r13 玩家流 ID ===== -->
   <div class="rowlab lp r13 gl">玩家流<br>ID 體系</div>
   <div class="cell pid r13 g1">渠道 ID / click</div>
   <div class="cell pid r13 g2">站點帳號 ID</div>
   <div class="cell pid r13 g3">包網商戶體系</div>
-  <div class="cell pid r13 g4">聚合透傳 ID</div>
-  <div class="cell pid r13 g5">op_code 體系 —— 五套 ID 互不貫通 <span class="brk">1</span></div>
+  <div class="cell pid r13 g4">op_code 體系 —— 四套 ID 互不貫通 <span class="brk">1</span></div>
 
   <!-- ===== r14 數據流 ===== -->
   <div class="rowlab ld r14 gl">數據流<br>數據資產</div>
   <div class="cell pdata r14 g1">投放後台:點擊/花費/轉化</div>
   <div class="cell pdata r14 g2">站點運營:充提/紅利/行為</div>
   <div class="cell pdata r14 g3">包網報表:<b>逐筆?待確認</b></div>
-  <div class="cell pdata r14 g4">聚合報表:對帳級</div>
-  <div class="cell pdata r14 g5">遊戲事件流:子彈級,<b>全鏈最細</b> —— 口徑各算 <span class="brk">6</span></div>
+  <div class="cell pdata r14 g4">遊戲事件流:子彈級,<b>全鏈最細</b>(聚合型僅對帳級)—— 口徑各算 <span class="brk">6</span></div>
 
   <!-- ===== r15 痛點 ===== -->
   <div class="rowlab lx r15 gl">痛點<br>斷裂</div>
   <div class="cell ppain r15 g1"><span class="brk">2</span> 拿不到下游 LTV;<span class="brk">8</span> 電銷/地推/簡訊一波流無追蹤</div>
   <div class="cell ppain r15 g2"><span class="brk">3</span> 槓桿進不了遊戲內;<span class="brk">4</span> 客服看不到遊戲內狀態</div>
   <div class="cell ppain r15 g3">大客戶 J9 化流失風險;逐筆明細可得性未知</div>
-  <div class="cell ppain r15 g4">非必經層被繞過,抽佣被上下擠壓</div>
-  <div class="cell ppain r15 g5"><span class="brk">1</span> 只能對匿名玩家運營;<span class="brk">3</span> 與站點 promotion 互盲,雙重讓利</div>
+  <div class="cell ppain r15 g4"><span class="brk">1</span> 只能對匿名玩家運營;<span class="brk">3</span> 與站點 promotion 互盲,雙重讓利;聚合型供應商遇有技術客戶會被自行對接、抽佣擠壓</div>
 
   <!-- ===== 底部:同一張圖內的整合條 ===== -->
   <div class="strip gold full" style="grid-row:16;">
     <span class="h">錢源</span><b>全鏈只有一個錢源:玩家的淨輸(GGR)。</b>
-    從站點往上游逐層分潤(包網=開版費+GGR分成/月費、聚合 PA=GGR 1-2%、遊戲商=GGR 6-12%;內容側合計約 7-14%),站點再掏錢向流量端買新玩家 —— 五個 BU 的收入全是同一筆 GGR 的切分與放大,<b>KPI 共背的天然錨點 = 玩家 LTV 與 GGR</b>(斷裂 7 的答案雛形)。直連只改分潤路徑,不改錢源。
+    從站點往上游逐層分潤(包網=開版費+GGR分成/月費、遊戲供應商=GGR 分成:純研發型 6-12%、聚合型把 1-2% 抽佣含在報價內),站點再掏錢向流量端買新玩家 —— 各環節的收入全是同一筆 GGR 的切分與放大,<b>KPI 共背的天然錨點 = 玩家 LTV 與 GGR</b>(斷裂 7 的答案雛形)。供應商自研或聚合只改分潤路徑,不改錢源。
   </div>
 
   <div class="strip dyn full" style="grid-row:17;">
     <span class="h">結構動態</span>
-    ① <b>直連是常態</b>:包網有能力直連遊戲商;大站點很多獨立直連 —— 遊戲商客戶天然三類,藍圖三類都要設計(主線權重待跟老闆確認)。
-    ② <b>站點分化循環</b>:接包網起家 → 做大嫌不靈活 → 自建 → 變成新包網 → 分化出獨立集團;包網靠定製靈活度留住大客戶。
+    ① <b>包網視角無聚合層</b>:PA / HG / 行業其他遊戲聚合商,對包網都是並列的遊戲供應商,包網直接對接挑選(2026-06-13 老闆修正)。
+    ② <b>站點分化循環</b>:接包網起家 → 做大嫌不靈活 → 自建 → 變成新包網 → 分化出獨立集團;大站(J9)有技術也自行對接遊戲供應商、繞過包網,包網靠定製靈活度留住大客戶。
     ③ <b>數據第一條線</b>:先串拿得到的四方 = 廣告商 + 大站 + PA + HG。
   </div>
 
   <div class="strip full" style="grid-row:18;">
-    <span class="h">支撐層(跨五環節)</span>
+    <span class="h">支撐層(跨四環節)</span>
     <div class="suprow">
       <div class="supcell"><b>支付</b>:代收代付、USDT;核心=成功率與成本,現由包網聚合</div>
       <div class="supcell"><b>數據/BI</b>:集團級=空白;所有智能模塊的地基 <span class="brk">6</span></div>
@@ -306,7 +280,7 @@
   <div class="strip full" style="grid-row:20; background:#fff;">
     <span class="h">斷裂點 = 整合機會(藍圖骨架)</span>
     <div class="brkrow">
-      <div class="brkcell"><span class="brk">1</span> 五套 ID 不貫通 → 集團統一玩家 ID / 設備指紋,全鏈歸因</div>
+      <div class="brkcell"><span class="brk">1</span> 四套 ID 不貫通 → 集團統一玩家 ID / 設備指紋,全鏈歸因</div>
       <div class="brkcell"><span class="brk">2</span> 投放端無 LTV → 深度轉化回傳,按預期價值出價(前 3 分鐘預測模型)</div>
       <div class="brkcell"><span class="brk">3</span> 站點與遊戲內活動互盲 → 聯合活動引擎(發券兌遊戲內道具/免費場/專屬房)</div>
       <div class="brkcell"><span class="brk">4</span> 客服不知遊戲內狀態 → 客服工作台拉通事件流;智能客服直接答</div>
