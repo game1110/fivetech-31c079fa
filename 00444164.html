@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>投流回傳與歸因鏈路(環節一·流量端技術實現)</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  :root{ --ink:#1f2937; --muted:#6b7280; --line:#e5e7eb;
+    --c-traffic:#7c3aed; --c-site:#0e7490; --c-money:#ca8a04; --c-game:#15803d;
+    --c-data:#059669; --c-break:#dc2626;}
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:"Microsoft JhengHei","PingFang TC","Noto Sans TC",sans-serif;
+    background:#f1f5f9; color:var(--ink); padding:26px 30px; max-width:1500px; margin:0 auto;}
+  h1{font-size:23px; letter-spacing:1px;}
+  h2{font-size:17px; margin:26px 0 6px; padding:6px 12px; color:#fff; border-radius:7px; letter-spacing:1px;}
+  h2.reg{background:var(--c-traffic);}
+  h2.ltv{background:var(--c-game);}
+  h2.risk{background:var(--c-break);}
+  h2.model{background:var(--c-site);}
+  .sub{color:var(--muted); font-size:12.5px; margin:5px 0 6px; line-height:1.7;}
+  .sub a{color:var(--c-traffic);}
+  .card{background:#fff; border:1px solid var(--line); border-radius:12px; padding:14px 16px;
+    box-shadow:0 2px 8px rgba(0,0,0,.07); margin-bottom:8px; overflow-x:auto;}
+  .mermaid{font-size:14px;}
+  .note{font-size:12px; color:var(--muted); line-height:1.75; margin:6px 2px 0;}
+  .note b{color:var(--ink);}
+  code{background:#f1f5f9; border:1px solid var(--line); border-radius:4px; padding:0 4px; font-size:11.5px;}
+  table{border-collapse:collapse; width:100%; font-size:12.3px; margin-top:4px;}
+  th,td{border:1px solid var(--line); padding:6px 9px; text-align:left; line-height:1.55; vertical-align:top;}
+  th{background:#f8fafc; font-weight:bold;}
+  td.m{background:#fffbeb; font-weight:bold; color:#92400e; white-space:nowrap;}
+  .tag{display:inline-block; font-size:10.5px; font-weight:bold; color:#fff; border-radius:4px; padding:0 6px; vertical-align:1px;}
+  .tag.x{background:var(--c-break);} .tag.d{background:var(--c-data);} .tag.t{background:var(--c-traffic);}
+  .foot{margin-top:18px; font-size:11.5px; color:var(--muted); line-height:1.85;}
+  .foot a{color:var(--c-traffic);}
+  @media print{ body{max-width:none;} .card{box-shadow:none; break-inside:avoid;} }
+</style>
+</head>
+<body>
+
+<h1>投流回傳與歸因鏈路(環節一·流量端技術實現)</h1>
+<div class="sub">
+  v1.0 · 2026-06-17 · 四環節中<b>環節一(流量端)</b>的後端深挖,與 <a href="624dd9ed.html">C端業務流程</a>(環節二·站點運營細部)對稱。全景與分層見 <a href="7cfea865.html">BC行業全景_總覽</a> / <a href="1bd5f328.html">站點業務流程_架構圖</a>;文字版見〈整合全文〉§2。<br>
+  本質是 <b>Facebook Conversions API(CAPI)/ pixel 的伺服器端 postback</b> —— iGaming 因瀏覽器端 pixel 被攔截/封殺,改走 server-to-server 才可靠、且能控制回傳內容(深度轉化)。
+</div>
+
+<h2 class="reg">一、註冊回傳時序(能歸因:把點擊接到註冊)</h2>
+<div class="card">
+<div class="mermaid">
+sequenceDiagram
+  autonumber
+  participant U as 使用者瀏覽器
+  participant FE as 前端
+  participant API as API伺服器
+  participant DB as 資料庫
+  participant CS as ConversionService
+  participant FB as 第三方API(Facebook)
+  participant MQ as QueueService
+  participant RT as RetryConversion
+
+  rect rgb(243,232,255)
+  note over U,DB: 1. 點擊落地與打點(種 click-id,尚無 UID)
+  U->>FE: GET /landing?fbclid=FB12345&pixel_id=PIX7890
+  FE->>FE: 解析 URL (fbclid, pixel_id) + 設置 Cookie
+  FE->>API: POST /save-tracking { fbclid, pixel_id, sessionID:S123 }
+  API->>DB: INSERT tracking_data { sessionID, fbclid, pixel_id }
+  DB-->>API: 儲存成功
+  end
+
+  rect rgb(207,250,254)
+  note over U,CS: 2. 轉化事件與身分回填(sessionID → UID)
+  U->>FE: 提交註冊表單(僅帶 sessionID)
+  FE->>API: POST /conversion-event { sessionID:S123, event:register }
+  API->>DB: SELECT fbclid, pixel_id FROM tracking_data WHERE sessionID=S123
+  DB-->>API: fbclid=FB12345, pixel_id=PIX7890
+  API->>DB: UPDATE tracking_data SET UID=USER001 WHERE sessionID=S123
+  API->>CS: processConversion(UID, event:register, fbclid, pixel_id)
+  end
+
+  rect rgb(220,252,231)
+  note over CS,RT: 3. Postback 回傳 + 失敗重試(可靠性)
+  CS->>FB: POST /facebook_api { event:register, UID, fbclid, pixel_id }
+  FB-->>CS: { status:success, message:"Conversion recorded" }
+  CS->>DB: INSERT conversion_logs { UID, event, status:success }
+  alt Postback 失敗
+    CS->>MQ: enqueue retry task
+    MQ->>RT: consume retry task
+    RT->>FB: POST /facebook_api (retry)
+    FB-->>RT: { status:success }
+    RT->>DB: UPDATE conversion_logs SET retry_count++, status=success
+  end
+  end
+</div>
+<div class="note">
+  <b>讀法</b>:① 落地時還沒 UID,先用臨時 <code>sessionID</code> 把廣告身分(<b>fbclid + pixel_id</b>)暫存進 <code>tracking_data</code>;② 註冊請求只帶 sessionID,伺服器<b>反查</b>回廣告身分並回填 <b>UID</b> —— 完成「匿名點擊→具名玩家」的縫合(站內版的 <span class="tag x">斷裂點 1</span> 最小解);③ 把轉化 postback 回 FB,讓投放算法 lookalike 放大,失敗走 <b>QueueService → RetryConversion</b> 保證「至少一次送達」(回傳越快放大越快,丟事件=好量白買)。
+</div>
+</div>
+
+<h2 class="model">二、資料模型(兩張表)</h2>
+<div class="card">
+<table>
+  <tr><th style="width:160px">表</th><th>欄位</th><th style="width:30%">角色</th></tr>
+  <tr><td class="m">tracking_data</td><td><code>sessionID</code>(臨時鍵)、<code>fbclid</code>、<code>pixel_id</code>、<code>UID</code>(註冊後回填)</td><td>點擊側打點 + 身分縫合</td></tr>
+  <tr><td class="m">conversion_logs</td><td><code>UID</code>、<code>event</code>、<code>value</code>、<code>status</code>、<code>retry_count</code></td><td>回傳側帳本 + 重試狀態機</td></tr>
+</table>
+<div class="note">第一節只用到 <code>event=register</code>(boolean 式「轉化了沒」);第三節把 <code>event</code> 擴到 first_deposit/purchase,並啟用 <code>value</code> 欄(金額式價值信號)。</div>
+</div>
+
+<h2 class="ltv">三、首存 / LTV 回傳時序(歸對價值:把回傳接到付費)</h2>
+<div class="card">
+<div class="sub" style="margin-top:0;">
+  第一節只回傳到「註冊」—— 量便宜、含金量低,FB 只按註冊成本(CPL)優化,買進的常是不充值的薄量。要讓算法去找「會付費的人」,得把回傳事件源沿玩家漏斗往下游推。這是 <span class="tag x">斷裂點 2(投放端拿不到下游 LTV)</span> 在工程上的形態。
+</div>
+<div class="mermaid">
+sequenceDiagram
+  autonumber
+  participant PAY as 站點錢包(支付回調)
+  participant GP as 遊戲供應商(op_code 事件流)
+  participant CS as ConversionService
+  participant DB as 資料庫
+  participant ML as pLTV 預測模型
+  participant FB as 第三方API(Facebook)
+
+  rect rgb(254,243,199)
+  note over PAY,FB: A. 首存回傳(真付費信號 → value 優化)
+  PAY->>CS: webhook 首存成功 { UID:USER001, value:30, currency:USDT }
+  CS->>DB: SELECT fbclid, pixel_id FROM tracking_data WHERE UID=USER001
+  DB-->>CS: fbclid=FB12345, pixel_id=PIX7890
+  CS->>FB: POST /facebook_api { event:first_deposit, value:30, currency:USDT, fbclid, pixel_id, event_id }
+  FB-->>CS: { status:success }
+  CS->>DB: INSERT conversion_logs { UID, event:first_deposit, value:30 }
+  end
+
+  rect rgb(220,252,231)
+  note over GP,FB: B. 遊戲行為 → 預測 pLTV → 即時回傳(ROAS 優化)
+  GP->>CS: 進遊前 3 分鐘行為事件 { op_code:OP777, ... }
+  CS->>DB: 還原廣告身分:op_code → UID → fbclid
+  note over CS,DB: 跨端 ID 映射;斷一段(無 op_code↔UID)就回不去廣告
+  CS->>ML: 預測 pLTV(前 3 分鐘行為)
+  ML-->>CS: pLTV=120 USDT(判定優質)
+  CS->>FB: POST /facebook_api { event:purchase, value:120(pLTV), fbclid, pixel_id, event_id }
+  FB-->>CS: { status:success }
+  CS->>DB: UPDATE conversion_logs SET predicted_value=120
+  end
+</div>
+<div class="note">
+  兩個關鍵改動:<b>(1) 回傳值從 boolean 升級成 value</b> —— 帶上金額(首存額 / 預測 pLTV),FB 才能做 value optimization / ROAS 出價,這是「按 LTV 出價」在 API 層的具體形態;<b>(2) 事件源從前端擴到錢包與遊戲端</b> —— <code>conversion_logs</code> 上游從一個變三個,其中遊戲端那條必須先有 <code>UID ↔ op_code</code> 映射才接得通,沒打通就只能回傳到首存為止。<br><br>
+  <b>時間矛盾(為何要預測模型)</b>:首存可能隔天、真 LTV 要 3-7 天才看得出,但「回傳越快放大越快」等不起 → 用<b>進遊前 3 分鐘行為跑模型預測 pLTV</b>,預測優質就即時回傳,把「準確但慢的真值」換成「即時但估的預測值」。這也是遊戲端子彈級事件數據餵投流端的最直接變現點。
+</div>
+</div>
+
+<h2 class="ltv">四、回傳事件的深度階梯</h2>
+<div class="card">
+<table>
+  <tr><th>回傳事件</th><th>發生位置</th><th>對 FB 的意義</th><th style="width:22%">取得難度</th></tr>
+  <tr><td class="m">register 註冊</td><td>站點前端(第一節)</td><td>激活,CPL 優化</td><td>易,本站內就有</td></tr>
+  <tr><td class="m">first_deposit 首存</td><td>站點錢包(支付回調)</td><td>真付費信號,CPA 優化</td><td>中,需掛錢包 webhook</td></tr>
+  <tr><td class="m">復充 / 累計付費</td><td>站點錢包</td><td>價值信號,可帶金額做 value 優化</td><td>中</td></tr>
+  <tr><td class="m">遊戲行為 / pLTV</td><td>遊戲供應商端事件流</td><td>ROAS / 按預期價值出價</td><td>難,跨 op_code 體系(斷裂點 1)</td></tr>
+</table>
+<div class="note">越往下含金量越高、但發生越晚、跨的 ID 體系越多 —— 這就是「斷裂點 2 要靠斷裂點 1 先解」的根因。</div>
+</div>
+
+<h2 class="risk">五、陷阱點(合規 / 技術)</h2>
+<div class="card">
+<table>
+  <tr><th style="width:170px">點</th><th>說明</th><th style="width:22%">對應全景</th></tr>
+  <tr><td><span class="tag x">合規</span> 落地頁斗篷(cloaking)</td><td><code>/landing</code> 對審核機器人與真人各回不同頁,是投 Meta 的日常手段;被抓即封 pixel/帳號</td><td>§2 渠道分類「需斗篷、養號」</td></tr>
+  <tr><td><span class="tag x">技術</span> sessionID 歸因窗口</td><td>fbclid 有時效、Cookie 會掉、跨設備會斷 —— 註冊/首存隔太久反查不到,歸因漏掉算「自然量」</td><td>斷裂點 1</td></tr>
+  <tr><td><span class="tag x">技術</span> 重試重複計數</td><td>retry 必須對 FB 帶冪等鍵(<code>event_id</code>)去重,否則一個轉化回傳多次,虛增、誤導出價</td><td>數據口徑(斷裂點 6)</td></tr>
+  <tr><td><span class="tag x">技術</span> 跨端 ID 映射</td><td>遊戲行為要回到 fbclid,必須串起 <code>sessionID → UID → op_code</code> 三段;斷一段,遊戲端 LTV 就回不去廣告</td><td>斷裂點 1</td></tr>
+  <tr><td><span class="tag x">口徑</span> value 口徑</td><td>回傳金額用首存額、毛 GGR 還是 NGR?口徑不一,FB 學到的「價值」就失真</td><td>斷裂點 6</td></tr>
+  <tr><td><span class="tag x">模型</span> 預測偏差</td><td>pLTV 預測偏高 → FB 拼命找「像高價值其實不充」的人,放大錯誤;模型要持續用真值回測校準</td><td>—</td></tr>
+  <tr><td><span class="tag x">合規</span> 灰產回傳限制 / pixel 養號</td><td>部分平台不收真實充值事件 → 只能回自定義「深度有效事件」當代理變量,本身就失真;pixel 被標記就燒掉,需可熱切換</td><td>§2「封號是日常成本」</td></tr>
+</table>
+</div>
+
+<div class="foot">
+  <b>一句話定位</b>:第一節是「<b>能歸因</b>」(把點擊接到註冊),第三節是「<b>歸對價值</b>」(把回傳接到付費與 LTV)。前者單站內就能做,後者必須跨站點錢包與遊戲端 —— 所以 <b>斷裂點 2(投放端拿不到下游 LTV)本質上要靠斷裂點 1(ID 貫通)先解</b>,兩者是同一條「數據跟著錢走」的鏈路在不同環節的斷口。<br>
+  關聯:<a href="7cfea865.html">全景矩陣</a> 流量端欄 · <a href="1bd5f328.html">架構圖</a> 系統分層 · <a href="624dd9ed.html">C端生命週期</a>(環節二細部)。文字版見〈BC行業業務流程_整合全文〉§2。
+</div>
+
+<script>
+  mermaid.initialize({ startOnLoad:true, theme:'base', sequence:{ showSequenceNumbers:false, wrap:true, width:200 },
+    flowchart:{ curve:'basis', nodeSpacing:28, rankSpacing:46 },
+    themeVariables:{ fontFamily:'"Microsoft JhengHei","Noto Sans TC",sans-serif', fontSize:'13px' } });
+</script>
+</body>
+</html>

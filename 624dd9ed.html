@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>BC C端業務流程(玩家全生命週期 · 數據運營視角)</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  :root{ --ink:#1f2937; --muted:#6b7280; --line:#e5e7eb;
+    --c-acq:#7c3aed; --c-site:#0e7490; --c-money:#ca8a04; --c-game:#15803d; --c-ret:#2563eb;
+    --c-data:#059669; --c-break:#dc2626;}
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:"Microsoft JhengHei","PingFang TC","Noto Sans TC",sans-serif;
+    background:#f1f5f9; color:var(--ink); padding:26px 30px; max-width:1500px; margin:0 auto;}
+  h1{font-size:23px; letter-spacing:1px;}
+  h2{font-size:17px; margin:26px 0 6px; padding:6px 12px; color:#fff; border-radius:7px; letter-spacing:1px;}
+  h2.s1{background:var(--c-site);}
+  h2.s2{background:var(--c-acq);}
+  h2.s3{background:var(--c-ret);}
+  h2.s4{background:#8a6d03;}
+  h2.s5{background:var(--c-break);}
+  .sub{color:var(--muted); font-size:12.5px; margin:5px 0 6px; line-height:1.7;}
+  .card{background:#fff; border:1px solid var(--line); border-radius:12px; padding:14px 16px;
+    box-shadow:0 2px 8px rgba(0,0,0,.07); margin-bottom:8px; overflow-x:auto;}
+  .mermaid{font-size:14px;}
+  .note{font-size:12px; color:var(--muted); line-height:1.75; margin:6px 2px 0;}
+  .note b{color:var(--ink);}
+  table{border-collapse:collapse; width:100%; font-size:12.3px; margin-top:4px;}
+  th,td{border:1px solid var(--line); padding:6px 9px; text-align:left; line-height:1.55; vertical-align:top;}
+  th{background:#f8fafc; font-weight:bold;}
+  td.stage{font-weight:bold; white-space:nowrap;}
+  td.stage.acq{color:#5b21b6;} td.stage.reg{color:#0c4a6e;} td.stage.pay{color:#92400e;}
+  td.stage.play{color:#14532d;} td.stage.ret{color:#1e3a8a;}
+  td.m{background:#fffbeb; color:#92400e;}
+  .kpi{display:inline-block; background:#eef2ff; border:1px solid #e0e7ff; border-radius:5px; padding:0 5px; font-size:11px; margin:1px 2px 1px 0; white-space:nowrap;}
+  .cardgrid{display:grid; grid-template-columns:repeat(2,1fr); gap:10px;}
+  @media(max-width:760px){.cardgrid{grid-template-columns:1fr}}
+  .mini{background:#fff; border:1px solid var(--line); border-radius:9px; padding:10px 12px;}
+  .mini h3{font-size:13.5px; margin-bottom:4px;}
+  .mini .d{font-size:11.8px; color:#555; line-height:1.7;}
+  .tag{display:inline-block; font-size:10.5px; font-weight:bold; color:#fff; border-radius:4px; padding:0 6px; vertical-align:1px;}
+  .tag.auto{background:var(--c-data);} .tag.rc{background:var(--c-break);} .tag.m{background:var(--c-money);}
+  .foot{margin-top:18px; font-size:11.5px; color:var(--muted); line-height:1.85;}
+  @media print{ body{max-width:none;} .card{box-shadow:none; break-inside:avoid;} }
+</style>
+</head>
+<body>
+
+<h1>BC C端業務流程(玩家全生命週期 · 數據運營視角)</h1>
+<div class="sub">v1.0 · 2026-06-15 · 整理自手寫心智圖(2023-06-23)。對齊現行四環節口徑:本圖是「站點(2C)→ 玩家」這一段的<b>運營細部展開</b>(環節二);全景與分層見 <a href="7cfea865.html">BC行業全景_總覽</a> / <a href="1bd5f328.html">站點業務流程_架構圖</a>,上游環節一見 <a href="00444164.html">投流回傳_歸因鏈路</a>(回傳時序)。</div>
+
+<h2 class="s1">一、玩家主漏斗(獲取 → 轉化 → 變現 → 留存)</h2>
+<div class="card">
+<div class="mermaid">
+flowchart LR
+  classDef acq fill:#f3e8ff,stroke:#7c3aed,color:#4c1d95;
+  classDef site fill:#cffafe,stroke:#0e7490,color:#0c4a6e;
+  classDef pay fill:#fef3c7,stroke:#b45309,color:#7c2d12;
+  classDef game fill:#dcfce7,stroke:#15803d,color:#14532d;
+  classDef ret fill:#dbeafe,stroke:#2563eb,color:#1e3a8a;
+  classDef auto fill:#d1fae5,stroke:#059669,color:#064e3b,stroke-dasharray:4 3;
+
+  subgraph ACQ["獲取 Acquisition"]
+    direction TB
+    CH["引流通道<br/>SEO · 落地頁 · 代理 · 廣宣"]
+    CH --> ARR["到站／下載<br/>App 下載量 · 日新增數"]
+  end
+
+  REG["註冊<br/>(協助註冊)"]:::site
+  PAY["首充／儲值<br/>(協助存款)"]:::pay
+  PLAY["進遊・遊玩<br/>用戶活躍數(日／月)"]:::game
+  REPAY["復充／提款<br/>留存・復購"]:::ret
+
+  ARR --> REG --> PAY --> PLAY --> REPAY
+
+  RET["留存／流失循環<br/>活躍 · 不活躍 · 忠誠 · 流失 → 回流"]:::ret
+  PLAY -. 沉睡召回 .-> RET
+  REPAY -. 流失召回 .-> RET
+  RET -. 回流再進遊 .-> PLAY
+
+  DATA["數據圈表客戶 → 分群觸達<br/>RFM · 生命週期 · 大額異常預警(自動化)"]:::auto
+  REG -. 圈人 .-> DATA
+  PAY -. 圈人 .-> DATA
+  PLAY -. 圈人 .-> DATA
+  DATA -. 觸達 .-> RET
+
+  class CH,ARR acq;
+</div>
+<div class="note">
+  <b>讀法</b>:引流通道把人帶到站／下載 App → 註冊(可<b>協助註冊</b>提轉化)→ <b>首充</b>是核心變現動作(可<b>協助存款</b>)→ 進遊產生活躍 → 復充/提款進入留存復購。整條漏斗每一段都靠「<b>數據圈表客戶</b>」圈人、再用 RFM／生命週期分群觸達,把活躍/不活躍/忠誠/流失的人推回遊戲(回流)。
+</div>
+</div>
+
+<h2 class="s1">二、各階段:運營動作 × 核心指標</h2>
+<div class="card">
+<table>
+  <tr><th style="width:96px">階段</th><th>運營動作</th><th style="width:42%">核心指標</th></tr>
+  <tr>
+    <td class="stage acq">獲取<br/>引流到站</td>
+    <td>選渠道(SEO／落地頁／代理／廣宣 Mosgram 等)、做素材、投放出價、競品活動排查</td>
+    <td><span class="kpi">渠道引流量</span><span class="kpi">渠道轉化率</span><span class="kpi">各渠道 ROI(投資回報比)</span><span class="kpi">CPM 曝光</span><span class="kpi">CPC 點擊</span><span class="kpi">CPA 行動</span><span class="kpi">App 下載量</span><span class="kpi">日新增數</span></td>
+  </tr>
+  <tr>
+    <td class="stage reg">註冊</td>
+    <td>註冊禮金、免 KYC 快註冊、<b>協助註冊</b>、新手引導</td>
+    <td><span class="kpi">到站→註冊轉化率</span><span class="kpi">註冊成本 CPL</span><span class="kpi">日新增註冊</span></td>
+  </tr>
+  <tr>
+    <td class="stage pay">首充<br/>儲值</td>
+    <td>首存優惠、充值教學、<b>協助存款</b>、支付成功率優化</td>
+    <td><span class="kpi">註冊→首存轉化率</span><span class="kpi">首存成本 CPA</span><span class="kpi">首存率</span><span class="kpi">ARPPU</span></td>
+  </tr>
+  <tr>
+    <td class="stage play">進遊<br/>遊玩</td>
+    <td>新手任務、體驗金/免費場、遊戲推薦排序、活動投放</td>
+    <td><span class="kpi">用戶活躍數 DAU／MAU</span><span class="kpi">PU／UV</span><span class="kpi">功能使用率</span><span class="kpi">人均流水</span></td>
+  </tr>
+  <tr>
+    <td class="stage ret">復充<br/>留存</td>
+    <td>紅利/反水、簽到任務、VIP 養成、沉睡禮包、流失召回</td>
+    <td><span class="kpi">復充率</span><span class="kpi">次日／7日／30日留存率</span><span class="kpi">流失率</span><span class="kpi">回流率</span><span class="kpi">LTV</span></td>
+  </tr>
+</table>
+<div class="note"><b>口徑提醒</b>:盈利看 <b>RTP</b> 為主(GGR=流水×(1−RTP) 機械綁定,日線不必同時畫);各階段轉化率/留存只比「定義相同」的口徑;對日報差異 &gt; 2% 要追原因。</div>
+</div>
+
+<h2 class="s3">三、用戶生命週期與分層運營</h2>
+<div class="card">
+<div class="mermaid">
+flowchart LR
+  classDef n fill:#dbeafe,stroke:#2563eb,color:#1e3a8a;
+  classDef warn fill:#fef2f2,stroke:#dc2626,color:#991b1b;
+  classDef good fill:#dcfce7,stroke:#15803d,color:#14532d;
+
+  NEW["新增用戶"]:::n
+  ACT["活躍"]:::good
+  LOY["忠誠(高貢獻)"]:::good
+  INA["不活躍"]:::warn
+  CHU["流失"]:::warn
+  BACK["回流"]:::n
+
+  NEW --> ACT
+  NEW --> INA
+  ACT --> LOY
+  ACT --> INA
+  INA --> CHU
+  CHU --> BACK
+  INA --> BACK
+  BACK --> ACT
+</div>
+<div class="cardgrid" style="margin-top:8px">
+  <div class="mini"><h3>RFM 模型</h3><div class="d">用 Recency(最近一次)× Frequency(頻次)× Monetary(金額)把玩家打分分層,鎖定頂層高貢獻(大 R / VIP),為每層定觸達策略與每週重點指標。</div></div>
+  <div class="mini"><h3>生命週期判斷</h3><div class="d">普查存量 → 看興趣 → 標記 新／老／不活躍／流失,各狀態配不同運營手段(新手禮、留存活動、沉睡召回、流失喚醒)。</div></div>
+  <div class="mini"><h3>價值分層</h3><div class="d">魚 / 小 R / 大 R-VIP 分層運營;頂層 20% 靠人工+專屬權益,長尾靠自動化 CRM 觸達。</div></div>
+  <div class="mini"><h3>分群觸達</h3><div class="d">「數據圈表客戶」= 按條件圈人 → SMS／Push／TG／外呼;沉睡禮包、輸光救濟金、回流券。</div></div>
+</div>
+</div>
+
+<h2 class="s4">四、活動運營與獲客成本</h2>
+<div class="card">
+<div class="cardgrid">
+  <div class="mini">
+    <h3>活動建立流程</h3>
+    <div class="d">
+      目標 → 策劃 → 資源 → 風控 → 監控 → 公布 → 復盤。落地要先算兩件事:<br/>
+      · <b>前置作業時程</b>(開發/素材/派獎名單的 lead time,從活動開始就建好資料夾)<br/>
+      · <b>評估成本</b>(紅利/派獎 vs 預期增量,用 8-12 週 baseline + z-score 看效應,不用 CPA/每客成本)<br/>
+      · 配套:<b>競品活動排查</b>、優惠活動過濾/回饋設計
+    </div>
+  </div>
+  <div class="mini">
+    <h3>獲客成本(計費演進)</h3>
+    <div class="d">
+      <span class="tag m">金</span> <b>CPM</b> Cost Per Mille(曝光)→ <b>CPC</b> Cost Per Click(點擊)→ <b>CPA</b> Cost Per Action(行動/激活)→ CPS(付費)→ 深度轉化回傳。<br/>
+      回本看:CPM/CPC → 註冊成本 CPL → 首存成本 CPA → 首存率 → <b>ROI 回本天數</b> → LTV。傳統渠道(代理/簡訊/地推)配獨立追蹤碼才算得出 ROI。
+    </div>
+  </div>
+</div>
+</div>
+
+<h2 class="s5">五、自動化與風控(守住 margin)</h2>
+<div class="card">
+<table>
+  <tr><th style="width:130px">模塊</th><th>做什麼</th><th style="width:30%">產出 / 口徑</th></tr>
+  <tr><td><span class="tag auto">自動</span> 大額/異常預警</td><td>對大額充提、異常流水、規整離場餘額等設自動化告警,即時抓套利/風險</td><td>告警清單 → 人工確認 → 反向優化規則</td></tr>
+  <tr><td><span class="tag auto">自動</span> 自動代報</td><td>Python 定時拉數出日報/週報(活躍、流水、留存、派獎),省人力</td><td class="m">Python + Athena;報表用後台口徑為準</td></tr>
+  <tr><td><span class="tag rc">風控</span> 流水・刷優惠判斷</td><td>判斷流水是否為「刷優惠/套利」(同 IP 多帳號、規整餘額、領獎後不回流)</td><td>flag 打分,嫌疑群與一般玩家分開看</td></tr>
+  <tr><td><span class="tag m">金流</span> 代收 / 代付</td><td>三方代收代付、USDT;充提成功率與成本是核心,提款時效=信任生命線</td><td>支付成功率、提款時效</td></tr>
+</table>
+</div>
+
+<div class="foot">
+  來源:手寫心智圖(2023-06-23,行業業務流程/20230623_182927.jpg)。<br/>
+  本圖屬四環節中「站點(2C)」對玩家的運營細部,與 <a href="7cfea865.html">全景矩陣</a> 的站點欄、<a href="1bd5f328.html">架構圖</a> 的玩家旅程互補;數據口徑以 02_數據 / 後台 xlsx 為準。
+</div>
+
+<script>
+  mermaid.initialize({ startOnLoad:true, theme:'base', flowchart:{ curve:'basis', nodeSpacing:30, rankSpacing:50 },
+    themeVariables:{ fontFamily:'"Microsoft JhengHei","Noto Sans TC",sans-serif', fontSize:'13px' } });
+</script>
+</body>
+</html>

@@ -16,6 +16,7 @@
   h2.flow{background:var(--c-site);}
   h2.arch{background:var(--c-baowang);}
   h2.money{background:#8a6d03;}
+  h2.seq{background:var(--c-traffic);}
   .sub{color:var(--muted); font-size:12.5px; margin:5px 0 6px; line-height:1.7;}
   .card{background:#fff; border:1px solid var(--line); border-radius:12px; padding:14px 16px;
     box-shadow:0 2px 8px rgba(0,0,0,.07); margin-bottom:8px; overflow-x:auto;}
@@ -160,6 +161,14 @@ flowchart TB
 </table>
 <div class="note">
   → 站點付給遊戲供應商的內容成本:純研發型約 <b>6-12% GGR</b>,聚合型約在所含遊戲商之上再加 <b>1-2%</b>(換「一次接全品類」的省事)。站點付完內容、包網、買量、紅利、支付、稅費後的剩餘才是淨利。<b>2026-06-13 後不再把聚合商當獨立分潤層 —— 它就是遊戲供應商的一種報價形態。</b>
+</div>
+</div>
+
+<h2 class="seq">四、投流回傳與歸因(環節一·流量端 → 獨立深挖)</h2>
+<div class="card">
+<div class="note" style="margin-top:0;">
+  「玩家從哪個渠道來、轉化怎麼回傳給 FB」屬<b>環節一(流量端)</b>的後端實現,角色(ConversionService / QueueService / Facebook API)與站點系統分層不同,已獨立成檔,不在本架構圖展開:<br>
+  → <a href="00444164.html"><b>投流回傳與歸因鏈路(環節一·流量端技術實現)</b></a> —— 含「註冊回傳」與「首存/LTV 回傳」兩張時序圖 + 陷阱表。
 </div>
 </div>
 
