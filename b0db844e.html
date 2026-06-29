@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>集團 B2B2C 整合 — 初步發想</title>
+<style>
+  :root{
+    --ink:#1f2937; --muted:#6b7280; --line:#e5e7eb; --bg:#f1f5f9;
+    --c-traffic:#7c3aed; --c-site:#0e7490; --c-baowang:#b45309; --c-game:#15803d;
+    --c-support:#475569; --c-break:#dc2626; --c-ok:#059669; --c-gold:#ca8a04;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:"Microsoft JhengHei","PingFang TC","Noto Sans TC",sans-serif;
+    background:var(--bg); color:var(--ink); line-height:1.7; padding:0 0 60px 0;}
+  .wrap{max-width:1140px; margin:0 auto; padding:0 22px;}
+
+  header{background:linear-gradient(110deg,#0f172a,#1e293b); color:#fff; padding:28px 0 22px;}
+  header h1{font-size:25px; letter-spacing:1px;}
+  header .lead{color:#cbd5e1; font-size:13.5px; margin-top:9px; line-height:1.85; max-width:960px;}
+  header .draft{display:inline-block; margin-top:12px; font-size:11.5px; background:#7c2d12; color:#fed7aa;
+    border:1px solid #9a3412; border-radius:6px; padding:3px 11px;}
+
+  /* 兩條串接線 insight */
+  .core{background:#fffbeb; border:1px solid #fcd34d; border-top:4px solid #f59e0b; border-radius:12px;
+    padding:16px 20px; margin-top:14px;}
+  .core .h{font-size:12px; letter-spacing:1.5px; color:#92400e; font-weight:bold;}
+  .core .two{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:8px;}
+  .core .two .x{background:#fff; border:1px solid #fde68a; border-radius:9px; padding:10px 13px; font-size:12.5px; line-height:1.65;}
+  .core .two .x b{color:#92400e; font-size:13.5px;}
+  .core .foot{font-size:12px; color:#78350f; margin-top:9px; line-height:1.7;}
+
+  nav{position:sticky; top:0; z-index:20; background:#0f172ad9; backdrop-filter:blur(6px);
+    border-bottom:1px solid #334155; padding:8px 0; margin-top:6px;}
+  nav .wrap{display:flex; gap:8px; flex-wrap:wrap;}
+  nav a{font-size:12.5px; color:#cbd5e1; text-decoration:none; padding:4px 12px; border-radius:6px; border:1px solid #334155;}
+  nav a:hover{background:#1e293b; color:#fff;}
+
+  section{margin-top:32px;}
+  h2{font-size:20px; padding-left:13px; border-left:6px solid var(--ink);}
+  h2 .q{color:var(--muted); font-size:13px; font-weight:normal; display:block; margin-top:2px;}
+  .secsub{color:var(--muted); font-size:12.5px; margin:8px 0 14px 3px; line-height:1.75;}
+
+  /* BU 連接圖 */
+  .chain{display:flex; align-items:stretch; gap:0; overflow-x:auto; padding:4px 0;}
+  .bu{flex:1 1 0; min-width:170px; border-radius:11px; color:#fff; padding:12px 13px; position:relative;}
+  .bu.traffic{background:var(--c-traffic);} .bu.site{background:var(--c-site);}
+  .bu.baowang{background:var(--c-baowang);} .bu.game{background:var(--c-game);}
+  .bu .t{font-size:14.5px; font-weight:bold;}
+  .bu .b{font-size:10.5px; background:rgba(255,255,255,.22); border-radius:9px; padding:1px 8px; display:inline-block; margin-top:4px;}
+  .bu .d{font-size:11px; color:rgba(255,255,255,.92); margin-top:7px; line-height:1.55;}
+  .arrow{flex:0 0 64px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; padding:0 2px;}
+  .arrow .big{font-size:20px; color:#475569;}
+  .arrow .lab{font-size:9.5px; color:#64748b; text-align:center; line-height:1.3;}
+  .support-bar{margin-top:10px; background:#fff; border:1.5px dashed var(--c-support); border-radius:10px; padding:9px 14px; font-size:12px; line-height:1.7;}
+  .support-bar b{color:var(--c-support);}
+
+  table{border-collapse:collapse; width:100%; font-size:12px; margin-top:10px; background:#fff;}
+  th,td{border:1px solid var(--line); padding:7px 10px; text-align:left; vertical-align:top;}
+  th{background:#1f2937; color:#fff; font-size:11px; letter-spacing:.5px;}
+  tr:nth-child(even) td{background:#fafafa;}
+  td b{color:#1e293b;}
+  .ok{color:var(--c-ok); font-weight:bold;}
+  .bad{color:var(--c-break); font-weight:bold;}
+  .warn{color:#b45309; font-weight:bold;}
+  td.stage{font-weight:bold; background:#eff6ff !important; color:#1e3a8a; white-space:nowrap;}
+  .idtag{font-size:10.5px; background:#eef2ff; border:1px solid #e0e7ff; border-radius:4px; padding:0 5px; white-space:nowrap;}
+  .brk{display:inline-flex; align-items:center; justify-content:center; min-width:16px; height:16px;
+    background:var(--c-break); color:#fff; border-radius:50%; font-size:10px; font-weight:bold; vertical-align:-2px; margin:0 1px;}
+
+  .takeaway{background:#ecfdf5; border:1px solid #a7f3d0; border-left:4px solid var(--c-ok); border-radius:9px;
+    padding:11px 15px; font-size:12.5px; line-height:1.75; margin-top:13px;}
+  .takeaway b{color:#065f46;}
+  .gap{background:#fef2f2; border:1px solid #fecaca; border-left:4px solid var(--c-break); border-radius:9px;
+    padding:11px 15px; font-size:12.5px; line-height:1.75; margin-top:13px;}
+  .gap b{color:#991b1b;}
+
+  /* 監控三層 */
+  .mon{display:flex; flex-direction:column; gap:12px;}
+  .tier{background:#fff; border:1px solid var(--line); border-radius:12px; overflow:hidden;}
+  .tier .th{padding:9px 15px; color:#fff; font-size:13.5px; font-weight:bold; display:flex; align-items:center; gap:10px;}
+  .tier .th .lv{background:rgba(255,255,255,.25); border-radius:6px; font-size:11px; padding:1px 8px;}
+  .tier.t1 .th{background:#0f172a;} .tier.t2 .th{background:#334155;} .tier.t3 .th{background:#991b1b;}
+  .tier .tb{padding:12px 15px;}
+  .metricgrid{display:grid; grid-template-columns:repeat(4,1fr); gap:9px;}
+  .mcard{border:1px solid var(--line); border-radius:9px; padding:8px 11px; font-size:11.5px; line-height:1.55; background:#f8fafc;}
+  .mcard .nm{font-weight:bold; font-size:12px; color:#1e293b; display:block; margin-bottom:2px;}
+  .mcard.traffic{border-top:3px solid var(--c-traffic);} .mcard.site{border-top:3px solid var(--c-site);}
+  .mcard.baowang{border-top:3px solid var(--c-baowang);} .mcard.game{border-top:3px solid var(--c-game);}
+
+  .northstar{background:#0f172a; color:#fff; border-radius:12px; padding:16px 20px; text-align:center; margin-bottom:6px;}
+  .northstar .l{font-size:11px; letter-spacing:2px; color:#94a3b8;}
+  .northstar .v{font-size:17px; font-weight:bold; margin-top:4px; line-height:1.7;}
+  .northstar .v span{color:#fcd34d;}
+  .northstar .s{font-size:11.5px; color:#cbd5e1; margin-top:6px;}
+
+  /* dashboard mock */
+  .dash{display:grid; grid-template-columns:repeat(2,1fr); gap:11px; margin-top:12px;}
+  .panel{border:1px solid var(--line); border-radius:11px; background:#fff; padding:12px 15px;}
+  .panel .pt{font-size:13px; font-weight:bold; color:#1e293b; margin-bottom:6px; display:flex; align-items:center; gap:7px;}
+  .panel .pt .dot{width:9px; height:9px; border-radius:50%;}
+  .panel ul{list-style:none; font-size:11.8px; line-height:1.7;}
+  .panel li{padding-left:14px; position:relative;}
+  .panel li:before{content:"·"; position:absolute; left:3px; color:#94a3b8; font-weight:bold;}
+
+  footer{margin-top:36px; padding-top:16px; border-top:1px solid var(--line); font-size:11.5px; color:var(--muted); line-height:1.9;}
+  footer a{color:#0e7490;} footer code{background:#f1f5f9; border-radius:4px; padding:1px 5px; font-size:11px;}
+  @media print{ nav{display:none;} body{background:#fff;} }
+  @media (max-width:880px){ .core .two,.dash{grid-template-columns:1fr;} .metricgrid{grid-template-columns:1fr 1fr;} }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <h1>集團 B2B2C 整合 — 初步發想</h1>
+    <div class="lead">把分散的幾個 BU（流量端 / 站點 / 包網 / 遊戲供應商）當成<b style="color:#fff;">一個產品</b>來看，回答三個實際問題：<b style="color:#fff;">每個 BU 怎麼連接、用戶旅程怎麼跑、運營要監控什麼</b>。下面都是具體、可執行的想法。</div>
+    <div class="draft">⚠ 還在初步發想階段 · v0 · 待各 BU 訪談校正，非定論</div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="core">
+    <div class="h">為什麼這幾個 BU 能被串起來 —— 因為它們本來就共用兩條線</div>
+    <div class="two">
+      <div class="x"><b>一條錢：</b>全鏈只有一個錢源 = 玩家的淨輸（GGR）。投流、站點、包網、遊戲供應商的收入，全是同一筆 GGR 的切分與放大 —— 不是各賺各的。</div>
+      <div class="x"><b>一個人：</b>從看到廣告到在遊戲裡輸贏，<b>從頭到尾是同一個玩家</b>。他不在乎背後是幾家公司拼的，他只經歷一條連續的旅程。</div>
+    </div>
+    <div class="foot">所以整合的本質很單純：<b>讓「同一個玩家、同一筆錢、同一份數據」能從頭走到尾不斷棒</b>。下面三節就是把這件事拆成 連接 → 旅程 → 監控。</div>
+  </div>
+</div>
+
+<nav><div class="wrap">
+  <a href="#connect">① 每個 BU 怎麼連接</a>
+  <a href="#journey">② 用戶旅程怎麼跑</a>
+  <a href="#monitor">③ 運營要監控什麼</a>
+</div></nav>
+
+<div class="wrap">
+
+<!-- ============ ① BU 連接 ============ -->
+<section id="connect">
+  <h2>① 每個 BU 怎麼連接 <span class="q">把鏈路畫出來：上游給下游什麼、下游付上游什麼、中間該交接什麼</span></h2>
+  <div class="secsub">BU 之間的「連接點」其實就是<b>三次交接（handoff）</b>。每一次交接都該同時遞三樣東西：<b>玩家身分 + 金流口徑 + 行為數據</b>。現在價值跟錢都遞了，獨獨「數據」這一棒一直掉 —— 這就是整合要補的縫。</div>
+
+  <div class="chain">
+    <div class="bu traffic"><div class="t">流量端</div><span class="b">智能投流（DSP）</span><div class="d">把人從廣告引到落地頁、註冊</div></div>
+    <div class="arrow"><span class="big">→</span><span class="lab">玩家流量<br>↘ 買量費<br>↖ 該回首存/LTV</span></div>
+    <div class="bu site"><div class="t">站點（2C）</div><span class="b">印度站</span><div class="d">面向玩家做運營：充提、活動、留存</div></div>
+    <div class="arrow"><span class="big">→</span><span class="lab">用系統<br>↘ 開版費+分成<br>↖ 該給運營明細</span></div>
+    <div class="bu baowang"><div class="t">包網</div><span class="b">系統商（2B）</span><div class="d">站點的中台，提供全套系統</div></div>
+    <div class="arrow"><span class="big">→</span><span class="lab">接遊戲<br>↘ GGR 分成<br>↖ 該回事件流</span></div>
+    <div class="bu game"><div class="t">遊戲供應商</div><span class="b">HG（自研）/ PA（聚合）</span><div class="d">提供遊戲內容與數值</div></div>
+  </div>
+
+  <div class="support-bar"><b>橫向串接（跨四個 BU）：</b>① <b>數據中台</b>＝把四方數據接起來的總線（現在是空白，要先建）② <b>支付</b>跨層收錢 ③ <b>客服 / 風控</b>本該跨層共享狀態與黑名單，現在三層各做各的。</div>
+
+  <table>
+    <tr><th style="width:150px;">交接點</th><th>上游給下游（價值）</th><th>下游付上游（錢）</th><th>該交接的數據（現在多半斷）</th><th style="width:90px;">現狀</th></tr>
+    <tr><td><b>流量端 → 站點</b></td><td>玩家流量（廣告→落地→註冊）</td><td>買量費（CPC/CPA/CPS）</td><td>站點該回傳<b>註冊 / 首存 / 之後的 LTV</b>，投流才知道買到的人值不值</td><td><span class="bad">只回到註冊</span></td></tr>
+    <tr><td><b>站點 → 包網</b></td><td>站點用包網的整套系統</td><td>開版費 + GGR 分成 / 月費</td><td>玩家逐筆充提/下注<b>明細</b>沉澱在包網，能不能拿到逐筆</td><td><span class="warn">待確認</span></td></tr>
+    <tr><td><b>包網 → 遊戲供應商</b></td><td>遊戲內容 / 一套 API</td><td>GGR 分成</td><td>遊戲內<b>事件流</b>（誰、玩什麼、輸贏、卡在哪）該回饋上去餵運營</td><td><span class="bad">停在供應商自家</span></td></tr>
+    <tr><td><b>數據中台（橫向）</b></td><td>把四方數據接成一條線</td><td>—</td><td>統一口徑 + <b>統一玩家 ID</b>（讓四套 ID 對得起來）</td><td><span class="bad">集團級空白</span></td></tr>
+    <tr><td><b>客服 / 風控（橫向）</b></td><td>跨層服務玩家</td><td>—</td><td>玩家遊戲內狀態給客服；<b>黑名單 / 設備庫</b>跨層共享</td><td><span class="bad">各做各的</span></td></tr>
+  </table>
+
+  <div class="takeaway"><b>連接的關鍵一句話：</b>價值跟錢的連接已經通了，缺的是<b>數據這一棒</b>。把每個交接點「該傳卻沒傳的數據」補上 —— 核心就是一個<b>貫穿全鏈的玩家 ID</b>，棒子才接得起來。這也是為什麼「先建數據中台 + 統一 ID」是其他所有事情的地基。</div>
+</section>
+
+<!-- ============ ② 用戶旅程 ============ -->
+<section id="journey">
+  <h2>② 用戶旅程怎麼跑 <span class="q">同一個玩家，從曝光到流失，一條龍走過四個 BU</span></h2>
+  <div class="secsub">把玩家旅程從頭排到尾，標出<b>每一步誰負責、用什麼系統、此刻他是什麼身分（ID）、現在追不追得到</b>。會看到一件事：玩家是一條連續旅程，但他的身分換了三次，旅程被切成三段、沒人能從頭看到尾。</div>
+
+  <table>
+    <tr><th style="width:70px;">階段</th><th>玩家在做什麼</th><th style="width:90px;">誰負責</th><th>系統 / 觸點</th><th style="width:120px;">此刻的身分 ID</th><th style="width:140px;">現在追得到嗎</th></tr>
+    <tr><td class="stage">曝光</td><td>滑到一則廣告</td><td>流量端</td><td>投放平台、素材</td><td><span class="idtag">渠道 ID</span></td><td class="ok">投放側看得到</td></tr>
+    <tr><td class="stage">點擊 → 落地</td><td>點進落地頁</td><td>流量端</td><td>落地頁（含斗篷）</td><td><span class="idtag">fbclid + sessionID</span></td><td class="ok">站內暫存</td></tr>
+    <tr><td class="stage">註冊</td><td>填表開帳號</td><td>站點</td><td>註冊/登入、設備指紋</td><td><span class="idtag">站點帳號 ID</span></td><td><span class="bad"><span class="brk">!</span>渠道 ID → 站點 ID 第一次斷</span></td></tr>
+    <tr><td class="stage">首存</td><td>第一次充值</td><td>站點</td><td>錢包 / 支付通道</td><td><span class="idtag">站點帳號 ID</span></td><td class="warn">站點看得到，投流回不去</td></tr>
+    <tr><td class="stage">首投</td><td>進遊戲下第一注</td><td>遊戲供應商</td><td>遊戲大廳 / 遊戲內</td><td><span class="idtag">op_code 體系</span></td><td><span class="bad"><span class="brk">!</span>站點 ID → 遊戲 ID 第二次斷</span></td></tr>
+    <tr><td class="stage">活躍 / 復充</td><td>反覆玩、反覆充</td><td>站點 + 遊戲</td><td>Promotion（紅利/反水）+ 遊戲內活動</td><td><span class="idtag">兩套並存</span></td><td><span class="bad">站點促銷與遊戲內活動互盲</span></td></tr>
+    <tr><td class="stage">VIP 養成</td><td>變成大 R</td><td>站點</td><td>VIP 體系、專屬客服</td><td><span class="idtag">站點帳號 ID</span></td><td class="warn">看不到他在遊戲裡的狀態</td></tr>
+    <tr><td class="stage">沉睡</td><td>一段時間不來</td><td>站點</td><td>CRM</td><td><span class="idtag">站點帳號 ID</span></td><td class="warn">不知道他為什麼走</td></tr>
+    <tr><td class="stage">召回</td><td>被訊息拉回</td><td>站點</td><td>SMS / Push / TG / 外呼</td><td><span class="idtag">站點帳號 ID</span></td><td class="warn">只能猜內容</td></tr>
+    <tr><td class="stage">流失</td><td>卸載 / 不回</td><td>—</td><td>重定向廣告</td><td><span class="idtag">已斷</span></td><td class="bad">跨端拉回很難</td></tr>
+  </table>
+
+  <div class="gap"><b>旅程現在斷在哪：</b>同一個玩家，從曝光到流失換了三套身分（渠道 ID → 站點帳號 → 遊戲 op_code），旅程被切成三截。結果是<b>沒有人能從「他從哪個廣告來」一路看到「他在遊戲裡輸了多少」</b> —— 投流不知道買到的人值不值、站點看不到玩家在遊戲內卡哪、客服答不出玩家遊戲內的問題。</div>
+
+  <div class="takeaway"><b>如果這條旅程能全程跟蹤，馬上能做四件事：</b>① 投流<b>按真實 LTV 出價</b>（不再只按註冊成本買薄量）② 站點發的券能<b>兌換到遊戲內</b>（道具/免費場/專屬房），不再雙重讓利 ③ 客服<b>看得到玩家遊戲內狀態</b>，答得出「為什麼沒中獎」④ <b>流失預測</b>知道玩家為何走、提前召回。這四件事全部依賴同一件前提：一個貫穿全鏈的玩家 ID（接回第①節）。</div>
+</section>
+
+<!-- ============ ③ 運營監控 ============ -->
+<section id="monitor">
+  <h2>③ 運營要監控什麼 <span class="q">先盯一條龍漏斗，再盯各環節健康，最後盯異常</span></h2>
+  <div class="secsub">監控不是每個 BU 各看各的報表，而是順著「一條錢、一個玩家」往下盯。分三層：先看全鏈漏斗（玩家在哪一步漏掉、錢怎麼分），再看各環節自己的健康指標，最後是異常預警。</div>
+
+  <div class="northstar">
+    <div class="l">全鏈北極星（所有 BU 共同盯這兩個）</div>
+    <div class="v"><span>GGR</span>（玩家淨輸 = 全鏈唯一錢源）　＋　<span>玩家 LTV</span>（一個玩家從進來到離開貢獻多少）</div>
+    <div class="s">每個 BU 的成本與收益，都換算成「對 GGR / LTV 的貢獻」來看，才能共背、才不會各自為政。</div>
+  </div>
+
+  <div class="mon">
+    <div class="tier t1">
+      <div class="th"><span class="lv">第一層</span>全鏈漏斗（跨 BU 一條龍）—— 最重要，現在最看不到</div>
+      <div class="tb">
+        <table style="margin-top:0;">
+          <tr><th>要盯的轉化</th><th>看什麼</th><th>漏在這裡代表</th></tr>
+          <tr><td class="stage">曝光 → 點擊 → 註冊</td><td>各渠道 CPL、註冊成本</td><td>素材/渠道問題（流量端）</td></tr>
+          <tr><td class="stage">註冊 → 首存</td><td>註冊→首存轉化率、首存成本</td><td>承接斷了（買到薄量 or 站點轉化差）</td></tr>
+          <tr><td class="stage">首存 → 首投 → 活躍</td><td>前期留存（次留 / 7 留）、新手漏斗</td><td>遊戲/新手體驗留不住（前期流失最兇）</td></tr>
+          <tr><td class="stage">活躍 → 復充 → VIP</td><td>復充率、ARPPU、大 R 養成率</td><td>變現/養客能力</td></tr>
+          <tr><td class="stage">全鏈 ROI</td><td>從「買量花多少」到「最後 GGR 多少」的回本天數</td><td>整條鏈賺不賺錢（現在算不出來）</td></tr>
+        </table>
+        <div class="gap" style="margin-top:11px;"><b>現狀：</b>這條漏斗橫跨四個 BU、四套 ID，現在拼不出來 —— 所以「最大卡點在哪」沒人答得準。<b>第一層監控能跑，等於把 ID 貫通做完了（接回第①②節）。</b></div>
+      </div>
+    </div>
+
+    <div class="tier t2">
+      <div class="th"><span class="lv">第二層</span>各環節健康（每個 BU 自己的儀表）</div>
+      <div class="tb">
+        <div class="metricgrid">
+          <div class="mcard traffic"><span class="nm">流量端</span>CPL / 首存成本 CPA · 假量比例 · ROI 回本天數 · 各「渠道 × 市場」貢獻</div>
+          <div class="mcard site"><span class="nm">站點（重點）</span>註冊→首存轉化 · DAU · 次留/7留 · ARPPU · 紅利率 · 提款時效 · 代理貢獻占比</div>
+          <div class="mcard baowang"><span class="nm">包網</span>系統穩定/故障率 · 開站數 · 支付成功率 · 客戶續約率（B 端留存）</div>
+          <div class="mcard game"><span class="nm">遊戲供應商</span>實際 RTP vs 目標 · 各遊戲留存/生命週期 · 事件異常 · GGR 分成對帳</div>
+        </div>
+        <div class="takeaway" style="margin-top:11px;"><b>提款時效</b>單獨拉出來盯 —— 它是玩家信任的生命線，提款慢/不到帳是這行最大的口碑殺手。</div>
+      </div>
+    </div>
+
+    <div class="tier t3">
+      <div class="th"><span class="lv">第三層</span>異常預警（風控，跨層共享）</div>
+      <div class="tb">
+        <table style="margin-top:0;">
+          <tr><th>盯什麼異常</th><th>抓什麼</th><th>怎麼用</th></tr>
+          <tr><td><b>玩家行為異常</b></td><td>升級/成長速度離譜、下注模式異常、套利、RTP 被拉高</td><td>子彈級事件設「報警線」，超線即標記（遊戲端最有料）</td></tr>
+          <tr><td><b>流量異常</b></td><td>某渠道假量、回傳灌水、註冊不充值的薄量</td><td>清洗算法 + 回傳交叉驗證</td></tr>
+          <tr><td><b>資金異常</b></td><td>充提異常、羊毛黨領完即走、提款異常</td><td>充提風控規則</td></tr>
+          <tr><td><b>跨層黑名單</b></td><td>同一套利團隊在三層分別出現</td><td><b>共享黑名單 / 設備庫</b>，一處抓到全鏈封</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <h2 style="margin-top:26px; font-size:16px; border-color:#334155;">運營監控儀表板 v0（先有這幾塊就夠開第一次會）</h2>
+  <div class="dash">
+    <div class="panel"><div class="pt"><span class="dot" style="background:#0f172a;"></span>全鏈漏斗轉化板</div><ul><li>一條龍：曝光→點擊→註冊→首存→首投→留存→復充</li><li>每一段轉化率 + 流失人數，紅標最大卡點</li></ul></div>
+    <div class="panel"><div class="pt"><span class="dot" style="background:var(--c-gold);"></span>錢的流向板</div><ul><li>GGR 怎麼切：投流 / 包網 / 遊戲分成 / 站點淨利</li><li>每塊成本對 GGR 的占比，全鏈 ROI</li></ul></div>
+    <div class="panel"><div class="pt"><span class="dot" style="background:var(--c-site);"></span>玩家分層板</div><ul><li>魚 / 小 R / 大 R-VIP 人數與 LTV 分布</li><li>大 R 名單（需先過套利過濾再進）</li></ul></div>
+    <div class="panel"><div class="pt"><span class="dot" style="background:var(--c-break);"></span>交接點健康板</div><ul><li>三個斷點的「數據貫通率」：註冊回傳成功率、首存回傳率、玩家 ID↔op_code 映射覆蓋率</li><li>哪個交接點掉棒一眼看到</li></ul></div>
+  </div>
+</section>
+
+<footer>
+  <b>配套視覺檔（同資料夾）</b>：<a href="BC行業全景_總覽.html">BC行業全景_總覽</a>（四環節 × 三條流一張圖）· <a href="站點業務流程_架構圖.html">站點業務流程_架構圖</a> · <a href="C端業務流程_玩家全生命週期.html">C端業務流程_玩家全生命週期</a> · <a href="投流回傳_歸因鏈路.html">投流回傳_歸因鏈路</a>。文字底稿見 <code>BC行業業務流程_整合全文.md</code>。<br>
+  本檔狀態：<b>初步發想 v0</b> —— 三個問題（BU 怎麼連接 / 用戶旅程怎麼跑 / 運營要監控什麼）的第一版想法，待各 BU PM 訪談後逐節校正。
+</footer>
+
+</div>
+</body>
+</html>
